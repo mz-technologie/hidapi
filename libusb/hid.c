@@ -541,9 +541,21 @@ int HID_API_EXPORT hid_init(void)
 	if (!usb_context) {
 		const char *locale;
 
+		// Skip USB enumeration on Android as it will not work
+		#ifdef ANDROID
+		const struct libusb_init_option options[] = {
+			LIBUSB_OPTION_NO_DEVICE_DISCOVERY,
+		};
+
+		/* Init Libusb */
+		if (libusb_init_context(&usb_context, options, sizeof(options)/sizeof(options[0])))
+			return -1;
+		#else
 		/* Init Libusb */
 		if (libusb_init(&usb_context))
 			return -1;
+		#endif
+
 
 		/* Set the locale if it's not set. */
 		locale = setlocale(LC_CTYPE, NULL);
